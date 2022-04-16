@@ -4,8 +4,11 @@ defmodule Issues.CLI do
   명령줄 파싱을 수행한 뒤, 각종 함수를 호출해
   깃허브 프로젝트의 최근 _n_개 이슈를 표 형식으로 만들어 출력한다.
   """
+  @spec run([binary]) :: :help | {any, any, integer}
   def run(argv) do
-    parse_args(argv)
+    argv
+    |> parse_args
+    |> process
   end
 
   @doc """
@@ -36,5 +39,16 @@ defmodule Issues.CLI do
 
   def args_to_internal_representation(_) do #잘못된 인자 또는 --help
     :help
+  end
+
+  def process(:help) do
+    IO.puts """
+    usage: issues <user> <project> [ count | #{@default_count}]
+    """
+    System.halt(0)
+  end
+
+  def process({user, project, _count}) do
+    Issues.GithubIssues.fetch(user, project)
   end
 end
